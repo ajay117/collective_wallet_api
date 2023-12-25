@@ -55,7 +55,7 @@ app.get("/groups/:id", async (req, res) => {
   }
   const group = await Group.findOne({ _id: id });
   if (!group) {
-    res.status(400).json({ message: "Please send a valid gruop id" });
+    res.status(400).json({ message: "Sorry, not found" });
     return;
   }
   res.status(200).json(group);
@@ -168,8 +168,6 @@ app.post("/groups", authenticateToken, async (req, res) => {
   res.status(201).json(group);
 });
 
-
-
 // || Put Routes
 
 app.put("/groups/:id", authenticateToken, async (req, res) => {
@@ -199,13 +197,24 @@ app.put("/groups/:id", authenticateToken, async (req, res) => {
 
 // || Delete Routes
 
-// app.delete('/groups/:id', (req,res) => {
+app.delete("/groups/:id", authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const { user } = req;
+  if (!id) {
+    res.status(400).json({ message: "Please provide a valid id" });
+  }
 
-// })
+  const group = await Group.findOne({ _id: id });
+  if (group.admin[0]["id"] !== user.id) {
+    res.status(401).json({ message: "You are not authorized" });
+    return;
+  }
+  res.status(200).end();
+});
 
-// app.delete('/users/:id', (req,res) => {
-
-// })
+app.delete("/users/:id", (req, res) => {
+  const { id } = req.params;
+});
 
 //Routes------------ ---------------- ---------------- ----------------
 
