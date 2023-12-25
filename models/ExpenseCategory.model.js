@@ -24,7 +24,7 @@ expenseCategorySchema.set("toJSON", {
     returnedDoc.id = returnedDoc._id.toString();
     delete returnedDoc._id;
     delete returnedDoc.__v;
-    return returnedDoc
+    return returnedDoc;
   },
 });
 

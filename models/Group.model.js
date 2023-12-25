@@ -1,6 +1,4 @@
 const mongoose = require("mongoose");
-const User = require("../models/User.model");
-const ExpenseCategory = require("../models/ExpenseCategory.model");
 
 const groupSchema = new mongoose.Schema({
   groupName: {
