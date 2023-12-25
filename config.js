@@ -1,8 +1,8 @@
 module.exports = {
-  node_environment: process.env.NODE_ENV,
-  //   server: {
-  //     port: process.env.SERVER_PORT,
-  //   },
+  // node_environment: process.env.NODE_ENV,
+    server: {
+      port: process.env.SERVER_PORT,
+    },
   database: {
     mongodb_pwd: process.env.DB_PASSWORD,
   },
