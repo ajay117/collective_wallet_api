@@ -35,21 +35,19 @@ app.get("/", (req, res) => {
 
 // ||GET Routes
 
-app.get("/users/:id", authenticateToken, async (req, res) => {
-  const { id } = req.params;
-  if (!id) {
-    res.status(400).json({ message: "Please enter an valid id" });
-    return;
-  }
-  const user = await User.findOne({ _id: id });
-  if (user) {
-    res.status(200).json(user);
-  } else {
-    res
-      .status(400)
-      .json({ message: "Sorry, no user found. Please insert an valid id" });
-  }
-});
+// app.get("/users/:id", authenticateToken, async (req, res) => {
+//   const { id } = req.params;
+//   if (!id) {
+//     res.status(400).json({ message: "Please enter an valid id" });
+//     return;
+//   }
+//   const user = await User.findOne({ _id: id });
+//   if (user) {
+//     res.status(200).json(user);
+//   } else {
+//     res.status(400).json({ message: "Sorry, no user found. Please insert an valid id" });
+//   }
+// });
 
 app.get("/groups/:id", async (req, res) => {
   const { id } = req.params;
@@ -81,7 +79,7 @@ app.post("/login", async (req, res, next) => {
       }
       if (result) {
         const secretKey = process.env.JSON_WEB_TOKEN_SECRET_KEY;
-        const userInfo = user.toJSON();
+        // const userInfo = user.toJSON();
         const token = jwt.sign({ user }, secretKey, {
           expiresIn: "1h",
         });
@@ -90,24 +88,15 @@ app.post("/login", async (req, res, next) => {
       }
     });
   } else {
-    res
-      .status(400)
-      .json({ message: "Sorry username or password do not match" });
+    res.status(400).json({ message: "Sorry username or password do not match" });
   }
 });
 
-app.post("/signup", async (req, res, next) => {
+app.post("/signup", async (req, res) => {
   const { username, password } = req.body;
   const saltRounds = 10;
 
-  if (
-    !(
-      typeof username === "string" &&
-      username.length >= 4 &&
-      typeof password === "string" &&
-      password.length >= 4
-    )
-  ) {
+  if (!(typeof username === "string" && username.length >= 4 && typeof password === "string" && password.length >= 4)) {
     res.status(400).json({
       error: "Username and password must be present and must be greater than 3",
     });
@@ -216,8 +205,20 @@ app.delete("/groups/:id", authenticateToken, async (req, res) => {
   res.status(200).end();
 });
 
-app.delete("/users/:id", (req, res) => {
+app.delete("/users/:id", authenticateToken, async (req, res) => {
   const { id } = req.params;
+  const { user } = req;
+  if (!id) {
+    res.status(400).json({ message: "Please send a valid id" });
+  }
+  const userInDb = await User.findOne({ _id: id });
+  if (userInDb) {
+    if (userInDb._id !== user.id) {
+      res.status(401).json({ message: "You are not authorized to make this request" });
+    }
+    await User.findOneAndDelete({ _id: userInDb._id });
+    res.status(200);
+  }
 });
 
 //Routes------------ ---------------- ---------------- ----------------
