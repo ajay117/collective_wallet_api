@@ -38,14 +38,19 @@ app.get("/", (req, res) => {
 
 // ||POST Routes
 
-// app.post('/login', (req,res) => {
-//     login logic
-// })
+app.post("/login", (req, res) => {
+  //get user credentials username and password
+  //
+});
 
-app.post("/signup", (req, res, next) => {
+app.post("/signup", async (req, res, next) => {
   const { username, password } = req.body;
-  console.log({ password });
   const saltRounds = 10;
+  const user = await User.find({ username });
+  if (user.length > 0) {
+    res.status(400).json({ error: "Username must be unique" });
+    return;
+  }
 
   bcrypt.hash(password, saltRounds, async (err, hash) => {
     if (err) {
@@ -62,9 +67,9 @@ app.post("/signup", (req, res, next) => {
     res.status(200).json({ message: "Successfully created" });
   });
 
-  //Get input from the user (i.e. username and password)
-  //the user name should be unique
-  //save username and hashed password to the database
+  // Get input from the user (i.e. username and password)
+  // the user name should be unique
+  // save username and hashed password to the database
 });
 
 // app.post('/groups', (req,res) => {
@@ -98,8 +103,6 @@ app.use((req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
-  //   console.log("Error from middleware");
-  //   console.error(err.stack);
   if (err.name === "ValidationError") {
     console.log(err.message);
     res.status(500).json("Username must be unique");
