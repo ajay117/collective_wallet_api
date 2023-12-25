@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const app = express();
 const port = 8080;
 const User = require("./models/User.model");
-
+const bcrypt = require("bcrypt");
 
 const pwd_db = process.env.DB_PASSWORD;
 
@@ -42,17 +42,25 @@ app.get("/", (req, res) => {
 //     login logic
 // })
 
-app.post("/signup", async (req, res) => {
+app.post("/signup", (req, res, next) => {
   const { username, password } = req.body;
+  console.log({ password });
+  const saltRounds = 10;
 
-  const hashedPassword
-  const user = new User({
-    username,
-    password,
+  bcrypt.hash(password, saltRounds, async (err, hash) => {
+    if (err) {
+      console.log(err);
+      res.status(500).json("Error hashing password");
+    }
+
+    const user = new User({
+      username,
+      hashedPassword: hash,
+    });
+    await user.save();
+    console.log(user);
+    res.status(200).json({ message: "Successfully created" });
   });
-  await user.save();
-  //   return user;
-  console.log(user);
 
   //Get input from the user (i.e. username and password)
   //the user name should be unique
