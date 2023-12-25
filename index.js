@@ -168,18 +168,26 @@ app.post("/groups", authenticateToken, async (req, res) => {
   res.status(201).json(group);
 });
 
-// r Put Routes
 
-app.put("/groups/:id/", async (req, res) => {
-  //Feature changing group name
+
+// || Put Routes
+
+app.put("/groups/:id", authenticateToken, async (req, res) => {
   const { group_name } = req.body;
   const { id } = req.params;
+  const { user } = req.user;
+
   if (!id) {
     res.status(400).json({
       message: "Please send a valid json",
     });
   }
   const group = await Group.findOne({ _id: id });
+
+  if (group.admin[0]["id"] !== user.id) {
+    res.status(401).json({ message: "Only admin can make this request." });
+    return;
+  }
   if (group.groupName !== group_name) {
     group.groupName = group_name;
     await group.save();
