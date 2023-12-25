@@ -11,6 +11,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const authenticateToken = require("./middleware/authenticateToken.middleware");
 const config = require("./config");
+const usersRoute = require("./controllers/User.controller");
 
 const port = 8080;
 const pwd_db = config.database.mongodb_pwd;
@@ -33,21 +34,9 @@ app.get("/", (req, res) => {
   res.send("Hello World");
 });
 
-// ||GET Routes
+app.use("/users", usersRoute);
 
-// app.get("/users/:id", authenticateToken, async (req, res) => {
-//   const { id } = req.params;
-//   if (!id) {
-//     res.status(400).json({ message: "Please enter an valid id" });
-//     return;
-//   }
-//   const user = await User.findOne({ _id: id });
-//   if (user) {
-//     res.status(200).json(user);
-//   } else {
-//     res.status(400).json({ message: "Sorry, no user found. Please insert an valid id" });
-//   }
-// });
+// ||GET Routes
 
 app.get("/groups/:id", async (req, res) => {
   const { id } = req.params;
@@ -203,22 +192,6 @@ app.delete("/groups/:id", authenticateToken, async (req, res) => {
     return;
   }
   res.status(200).end();
-});
-
-app.delete("/users/:id", authenticateToken, async (req, res) => {
-  const { id } = req.params;
-  const { user } = req;
-  if (!id) {
-    res.status(400).json({ message: "Please send a valid id" });
-  }
-  const userInDb = await User.findOne({ _id: id });
-  if (userInDb) {
-    if (userInDb._id !== user.id) {
-      res.status(401).json({ message: "You are not authorized to make this request" });
-    }
-    await User.findOneAndDelete({ _id: userInDb._id });
-    res.status(200);
-  }
 });
 
 //Routes------------ ---------------- ---------------- ----------------
