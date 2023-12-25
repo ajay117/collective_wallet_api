@@ -38,16 +38,61 @@ app.get("/", (req, res) => {
 
 // ||POST Routes
 
-app.post("/login", (req, res) => {
-  //get user credentials username and password
-  //
+app.post("/login", async (req, res, next) => {
+  const { username, password } = req.body;
+  if (
+    !(
+      typeof username === "string" &&
+      username.length >= 4 &&
+      typeof password === "string" &&
+      password.length >= 4
+    )
+  ) {
+    res.status(400).json({
+      error: "Username and password must be present and must be greater than 3",
+    });
+    return;
+  }
+  const user = await User.findOne({ username });
+  console.log({ user });
+  // return;
+  if (user) {
+    const hashedPassword = user.hashedPassword;
+    console.log({ password, hashedPassword });
+    // return
+    bcrypt.compare(password, hashedPassword, (err, result) => {
+      if (err) {
+        next(err);
+      }
+      if (result) {
+        res.status(200).json(user);
+      }
+    });
+  } else {
+    res.status(400).json({ error: "Sorry username or password do not match" });
+  }
 });
 
 app.post("/signup", async (req, res, next) => {
   const { username, password } = req.body;
   const saltRounds = 10;
-  const user = await User.find({ username });
-  if (user.length > 0) {
+
+  if (
+    !(
+      typeof username === "string" &&
+      username.length >= 4 &&
+      typeof password === "string" &&
+      password.length >= 4
+    )
+  ) {
+    res.status(400).json({
+      error: "Username and password must be present and must be greater than 3",
+    });
+    return;
+  }
+
+  const user = await User.findOne({ username });
+  if (user) {
     res.status(400).json({ error: "Username must be unique" });
     return;
   }
@@ -66,10 +111,6 @@ app.post("/signup", async (req, res, next) => {
     console.log(user);
     res.status(200).json({ message: "Successfully created" });
   });
-
-  // Get input from the user (i.e. username and password)
-  // the user name should be unique
-  // save username and hashed password to the database
 });
 
 // app.post('/groups', (req,res) => {
@@ -103,6 +144,7 @@ app.use((req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
+  console.log("Error from middleware", err);
   if (err.name === "ValidationError") {
     console.log(err.message);
     res.status(500).json("Username must be unique");
