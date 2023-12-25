@@ -19,6 +19,15 @@ const expenseCategorySchema = new mongoose.Schema({
   ],
 });
 
+expenseCategorySchema.set("toJSON", {
+  transform: (doc, returnedDoc) => {
+    returnedDoc.id = returnedDoc._id.toString();
+    delete returnedDoc._id;
+    delete returnedDoc.__v;
+    return returnedDoc
+  },
+});
+
 const ExpenseCategory = mongoose.model(
   "ExpenseCategory",
   expenseCategorySchema

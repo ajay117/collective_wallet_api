@@ -22,6 +22,15 @@ const groupSchema = new mongoose.Schema({
   ], //We will store references of expenses
 });
 
+groupSchema.set("toJSON", {
+  transform: (doc, returnedDoc) => {
+    returnedDoc.id = returnedDoc._id.toString();
+    delete returnedDoc._id;
+    delete returnedDoc.__v;
+    return returnedDoc;
+  },
+});
+
 const Group = mongoose.model("Group", groupSchema);
 
 module.exports = Group;
