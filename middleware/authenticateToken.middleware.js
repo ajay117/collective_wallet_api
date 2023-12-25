@@ -11,7 +11,7 @@ function authenticateToken(req, res, next) {
     if (err) {
       return res.sendStatus(403);
     }
-    console.log("user from auth: ", user);
+    // console.log("user from auth: ", user);
     req.user = user;
     next();
   });

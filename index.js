@@ -5,8 +5,10 @@ const mongoose = require("mongoose");
 const app = express();
 const port = 8080;
 const User = require("./models/User.model");
+const Group = require("./models/Group.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const authenticateToken = require("./middleware/authenticateToken.middleware");
 
 const pwd_db = process.env.DB_PASSWORD;
 
@@ -68,11 +70,11 @@ app.post("/login", async (req, res, next) => {
       if (result) {
         const secretKey = process.env.JSON_WEB_TOKEN_SECRET_KEY;
         const userInfo = user.toJSON();
-        const token = jwt.sign({ userInfo: userInfo }, secretKey, {
+        const token = jwt.sign({ user }, secretKey, {
           expiresIn: "1h",
         });
 
-        res.status(200).json({user,token});
+        res.status(200).json({ user, token });
       }
     });
   } else {
@@ -120,14 +122,27 @@ app.post("/signup", async (req, res, next) => {
   });
 });
 
-app.post("/groups", (req, res) => {
-  //get group name and admin info from user
-  //check user credentials and return info about the user
-  //if user
-  //admin info will be the info of the user who created the group
-  //update adminInGroup property in User model with this group
-  //the group will have
-  // group name, admin obj with user id and user name,empty members array, empty expenses array
+app.post("/groups", authenticateToken, async (req, res) => {
+  const { groupName } = req.body;
+  const { user } = req;
+  const userId = user.user.id;
+  const userInfo = await User.findOne({ _id: userId });
+
+  console.log({ userInfo });
+
+  const group = new Group({
+    groupName: groupName,
+    admin: [],
+    members: [],
+    expenses: [],
+  });
+
+  group.admin.push({
+    id: userInfo._id.toString(),
+    username: userInfo.username,
+  });
+  await group.save();
+  res.status(201).json(group);
 });
 
 // app.post('/users', (req,res) => {
