@@ -7,12 +7,12 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  password: {
+  hashedPassword: {
     type: String,
     required: true,
   },
-  memberInGroup: [],
-  adminInGroup: [],
+  memberInGroup: [], // We will store members id and username as a object inside the array. There can be more members
+  adminInGroup: [], //We will store user id and usernane inside the array. There will be only one admin
 });
 
 userSchema.plugin(uniqueValidator);
