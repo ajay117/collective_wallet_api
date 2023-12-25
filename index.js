@@ -3,16 +3,20 @@ const express = require("express");
 require("express-async-errors");
 const mongoose = require("mongoose");
 const app = express();
-const port = 8080;
+const path = require("path");
+const cors = require("cors");
 const User = require("./models/User.model");
 const Group = require("./models/Group.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const authenticateToken = require("./middleware/authenticateToken.middleware");
+const config = require("./config");
 
-const pwd_db = process.env.DB_PASSWORD;
+const port = 8080;
+const pwd_db = config.database.mongodb_pwd;
 
-app.use(express.static("public"));
+app.use(cors());
+app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
 main().catch((err) => console.log(err));
