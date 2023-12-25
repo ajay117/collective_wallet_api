@@ -133,8 +133,8 @@ app.post("/signup", async (req, res, next) => {
 });
 
 app.post("/groups", authenticateToken, async (req, res) => {
-  const { groupName } = req.body;
-  if (await Group.findOne({ groupName })) {
+  const { group_name } = req.body;
+  if (await Group.findOne({ group_name })) {
     res.status(400).json({ message: "The group already exists" });
     return;
   }
@@ -146,7 +146,7 @@ app.post("/groups", authenticateToken, async (req, res) => {
   console.log({ userInDb });
 
   const group = new Group({
-    groupName: groupName,
+    groupName: group_name,
     admin: [],
     members: [],
     expenses: [],
@@ -168,9 +168,24 @@ app.post("/groups", authenticateToken, async (req, res) => {
   res.status(201).json(group);
 });
 
-// || Put Routes
+// r Put Routes
 
-// app.put("/groups/:id/", (req, res) => {});
+app.put("/groups/:id/", async (req, res) => {
+  //Feature changing group name
+  const { group_name } = req.body;
+  const { id } = req.params;
+  if (!id) {
+    res.status(400).json({
+      message: "Please send a valid json",
+    });
+  }
+  const group = await Group.findOne({ _id: id });
+  if (group.groupName !== group_name) {
+    group.groupName = group_name;
+    await group.save();
+    res.status(200).json({ group, message: "Successfully updated" });
+  }
+});
 
 // app.put("/users/:id/", (req, res) => {});
 
