@@ -6,6 +6,7 @@ const app = express();
 const port = 8080;
 const User = require("./models/User.model");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const pwd_db = process.env.DB_PASSWORD;
 
@@ -40,19 +41,19 @@ app.get("/", (req, res) => {
 
 app.post("/login", async (req, res, next) => {
   const { username, password } = req.body;
-  if (
-    !(
-      typeof username === "string" &&
-      username.length >= 4 &&
-      typeof password === "string" &&
-      password.length >= 4
-    )
-  ) {
-    res.status(400).json({
-      error: "Username and password must be present and must be greater than 3",
-    });
-    return;
-  }
+  // if (
+  //   !(
+  //     typeof username === "string" &&
+  //     username.length >= 4 &&
+  //     typeof password === "string" &&
+  //     password.length >= 4
+  //   )
+  // ) {
+  //   res.status(400).json({
+  //     error: "Username and password must be present and must be greater than 3",
+  //   });
+  //   return;
+  // }
   const user = await User.findOne({ username });
   console.log({ user });
   // return;
@@ -65,7 +66,13 @@ app.post("/login", async (req, res, next) => {
         next(err);
       }
       if (result) {
-        res.status(200).json(user);
+        const secretKey = process.env.JSON_WEB_TOKEN_SECRET_KEY;
+        const userInfo = user.toJSON();
+        const token = jwt.sign({ userInfo: userInfo }, secretKey, {
+          expiresIn: "1h",
+        });
+
+        res.status(200).json({user,token});
       }
     });
   } else {
@@ -113,9 +120,15 @@ app.post("/signup", async (req, res, next) => {
   });
 });
 
-// app.post('/groups', (req,res) => {
-//     logic to create a group
-// })
+app.post("/groups", (req, res) => {
+  //get group name and admin info from user
+  //check user credentials and return info about the user
+  //if user
+  //admin info will be the info of the user who created the group
+  //update adminInGroup property in User model with this group
+  //the group will have
+  // group name, admin obj with user id and user name,empty members array, empty expenses array
+});
 
 // app.post('/users', (req,res) => {
 //     logic to create a user
