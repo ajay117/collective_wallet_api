@@ -11,7 +11,9 @@ const groupsRoute = require("./controllers/Group.controller");
 const errorHandler = require("./middleware/errorHandler.middleware");
 
 const port = 8080;
-const pwd_db = config.database.mongodb_pwd;
+// const pwd_db = config.database.mongodb_pwd;
+const mongoDbUrl = config.MONGODB_URI;
+console.log(mongoDbUrl);
 
 app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
@@ -20,9 +22,7 @@ app.use(express.json());
 main().catch((err) => console.log(err));
 
 async function main() {
-  await mongoose.connect(
-    `mongodb+srv://meajay64:${pwd_db}@cluster0.tgd11fa.mongodb.net/test?retryWrites=true&w=majority`
-  );
+  await mongoose.connect(mongoDbUrl);
 }
 
 // app.get("/", (req, res) => {
@@ -41,6 +41,5 @@ app.use(errorHandler);
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
-
 
 module.exports = app;
