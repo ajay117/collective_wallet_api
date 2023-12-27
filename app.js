@@ -10,10 +10,7 @@ const usersRoute = require("./controllers/User.controller");
 const groupsRoute = require("./controllers/Group.controller");
 const errorHandler = require("./middleware/errorHandler.middleware");
 
-const port = 8080;
-// const pwd_db = config.database.mongodb_pwd;
 const mongoDbUrl = config.MONGODB_URI;
-console.log(mongoDbUrl);
 
 app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
@@ -25,9 +22,9 @@ async function main() {
   await mongoose.connect(mongoDbUrl);
 }
 
-// app.get("/", (req, res) => {
-//   res.send("Hello World");
-// });
+app.get("/", (req, res) => {
+  res.json({ message: "Hello world" });
+});
 
 app.use("/users", usersRoute);
 app.use("/groups", groupsRoute);
@@ -37,9 +34,5 @@ app.use((req, res) => {
 });
 
 app.use(errorHandler);
-
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
 
 module.exports = app;
