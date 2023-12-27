@@ -5,7 +5,8 @@ function authenticateToken(req, res, next) {
   const token = authHeader && authHeader.split(" ")[1];
 
   if (token == null) {
-    return res.sendStatus(401);
+    res.status(401).json({ message: "You are not authorized" });
+    return;
   }
   jwt.verify(token, process.env.JSON_WEB_TOKEN_SECRET_KEY, (err, user) => {
     if (err) {

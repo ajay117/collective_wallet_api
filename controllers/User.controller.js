@@ -5,6 +5,11 @@ const User = require("../models/User.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+router.get("/", authenticateToken, async (req, res) => {
+  const users = await User.find({});
+  res.status(200).json(users);
+});
+
 router.get("/:id", authenticateToken, async (req, res) => {
   const { id } = req.params;
   if (!id) {
