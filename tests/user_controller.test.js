@@ -6,6 +6,7 @@ const User = require("../models/User.model");
 const { createHashedPassword } = require("../helpers/test.helper");
 
 const api = supertest(app);
+let token;
 
 // test("message 'hello world' returns as json", async () => {
 //   await api
@@ -30,6 +31,21 @@ const initialData = [
     id: "65893f104d6fb5608c9b1309",
   },
 ];
+
+beforeAll(async () => {
+  const userCredentials = {
+    username: "ajay",
+    password: "111111",
+  };
+
+  const { body } = await api
+    .post("/users/login")
+    .send(userCredentials)
+    .expect(200)
+    .expect("Content-Type", /application\/json/);
+
+  token = body.token;
+});
 
 beforeEach(async () => {
   await User.deleteMany();
@@ -64,19 +80,6 @@ describe('testing "/users" route', () => {
   });
 
   test("a login user can see users list", async () => {
-    const userCredentials = {
-      username: "ajay",
-      password: "111111",
-    };
-
-    const { body } = await api
-      .post("/users/login")
-      .send(userCredentials)
-      .expect(200)
-      .expect("Content-Type", /application\/json/);
-
-    const { token } = body;
-
     await api
       .get("/users")
       .set("Authorization", `Bearer ${token}`)
@@ -84,20 +87,38 @@ describe('testing "/users" route', () => {
       .expect("Content-Type", /application\/json/);
   });
 
-  //   test("/users should show list of initialData if have valid token", async () => {
+  test("/users should show list of initialData if have valid token", async () => {
+    await api
+      .get("/users")
+      .set("Authorization", `Beared ${token}`)
+      .expect(200)
+      .expect("Content-Type", /application\/json/);
 
-  //     await api
-  //       .get("/users")
-  //       .expect(200)
-  //       .expect("Content-Type", /application\/json/);
+    const response = await api
+      .get("/users")
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200)
+      .expect("Content-Type", /application\/json/);
 
-  //     const response = await api
-  //       .get("/users")
-  //       .expect(200)
-  //       .expect("Content-Type", /application\/json/);
+    expect(response.body).toHaveLength(initialData.length);
+  });
 
-  //     expect(response.body).toHaveLength(initialData.length);
-  //   });
+  test("should show info about a particular user id", async () => {
+    const userObject = {
+      username: "ajay",
+      memberInGroup: [],
+      adminInGroup: [],
+      id: "6588f25bec299c11ec41db2f",
+    };
+
+    const response = await api
+      .get(`/users/${userObject.id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200)
+      .expect("Content-Type", /application\/json/);
+
+    expect(response.body).toEqual(userObject);
+  });
 });
 
 afterAll(async () => {
