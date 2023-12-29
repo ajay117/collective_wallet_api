@@ -35,13 +35,10 @@ router.delete("/:id", authenticateToken, async (req, res) => {
   console.log(userInDb.id, user.user.id);
   if (userInDb) {
     if (userInDb.id !== user.user.id) {
-      console.log("hello from routes");
-      console.log(userInDb.id, user.user.id);
       res.status(401).json({ message: "You are not authorized to make this request" });
     }
-    console.log("hello------");
-    const deletedUser = await User.findOneAndDelete({ _id: userInDb.id });
-    console.log(deletedUser);
+
+    await User.findOneAndDelete({ _id: userInDb.id });
     res.status(200).end();
   }
 });

@@ -125,7 +125,23 @@ describe('testing "/users" route', () => {
     await api.del(`/users/${firstUserInDb.id}`).set("Authorization", `Bearer ${token}`).expect(200);
     const usersLeftInDb = await usersInDB();
     expect(usersLeftInDb).toHaveLength(initialData.length - 1);
-  }, 30000);
+  });
+
+  test("a new user can be created in database after signup", async () => {
+    const user = {
+      username: "Bikash",
+      password: "222222",
+    };
+
+    await api
+      .post("/users/signup")
+      .send(user)
+      .expect(200)
+      .expect("Content-Type", /application\/json/);
+
+    const usersLeftInDb = await usersInDB();
+    expect(usersLeftInDb).toHaveLength(initialData.length + 1);
+  });
 });
 
 afterAll(async () => {
