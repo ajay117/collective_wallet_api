@@ -30,13 +30,19 @@ router.delete("/:id", authenticateToken, async (req, res) => {
   if (!id) {
     res.status(400).json({ message: "Please send a valid id" });
   }
-  const userInDb = await User.findOne({ _id: id });
+  let userInDb = await User.findOne({ _id: id });
+  userInDb = userInDb.toJSON();
+  console.log(userInDb.id, user.user.id);
   if (userInDb) {
-    if (userInDb._id !== user.id) {
+    if (userInDb.id !== user.user.id) {
+      console.log("hello from routes");
+      console.log(userInDb.id, user.user.id);
       res.status(401).json({ message: "You are not authorized to make this request" });
     }
-    await User.findOneAndDelete({ _id: userInDb._id });
-    res.status(200);
+    console.log("hello------");
+    const deletedUser = await User.findOneAndDelete({ _id: userInDb.id });
+    console.log(deletedUser);
+    res.status(200).end();
   }
 });
 

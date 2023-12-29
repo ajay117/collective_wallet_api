@@ -2,8 +2,8 @@ const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../app");
 const User = require("../models/User.model");
-
-const { createHashedPassword } = require("../helpers/test.helper");
+const { createHashedPassword, usersInDB } = require("../helpers/test.helper");
+// const config = require("../config");
 
 const api = supertest(app);
 let token;
@@ -32,7 +32,16 @@ const initialData = [
   },
 ];
 
-beforeAll(async () => {
+beforeEach(async () => {
+  await User.deleteMany();
+  let password = "111111";
+  initialData[0].hashedPassword = await createHashedPassword(password);
+  let userObject = new User(initialData[0]);
+  await userObject.save();
+  initialData[1].hashedPassword = await createHashedPassword(password);
+  userObject = new User(initialData[1]);
+  await userObject.save();
+
   const userCredentials = {
     username: "ajay",
     password: "111111",
@@ -45,17 +54,6 @@ beforeAll(async () => {
     .expect("Content-Type", /application\/json/);
 
   token = body.token;
-});
-
-beforeEach(async () => {
-  await User.deleteMany();
-  let password = "111111";
-  initialData[0].hashedPassword = await createHashedPassword(password);
-  let userObject = new User(initialData[0]);
-  await userObject.save();
-  initialData[1].hashedPassword = await createHashedPassword(password);
-  userObject = new User(initialData[1]);
-  await userObject.save();
 });
 
 describe('testing "/users" route', () => {
@@ -90,7 +88,7 @@ describe('testing "/users" route', () => {
   test("/users should show list of initialData if have valid token", async () => {
     await api
       .get("/users")
-      .set("Authorization", `Beared ${token}`)
+      .set("Authorization", `Beare ${token}`)
       .expect(200)
       .expect("Content-Type", /application\/json/);
 
@@ -103,7 +101,7 @@ describe('testing "/users" route', () => {
     expect(response.body).toHaveLength(initialData.length);
   });
 
-  test("should show info about a particular user id", async () => {
+  test("/users/:id should show info about a particular user id", async () => {
     const userObject = {
       username: "ajay",
       memberInGroup: [],
@@ -119,6 +117,15 @@ describe('testing "/users" route', () => {
 
     expect(response.body).toEqual(userObject);
   });
+
+  test("a user can delete his/her account from database", async () => {
+    const response = await api.get("/users").set("Authorization", `Bearer ${token}`);
+    const firstUserInDb = response.body[0];
+
+    await api.del(`/users/${firstUserInDb.id}`).set("Authorization", `Bearer ${token}`).expect(200);
+    const usersLeftInDb = await usersInDB();
+    expect(usersLeftInDb).toHaveLength(initialData.length - 1);
+  }, 30000);
 });
 
 afterAll(async () => {
