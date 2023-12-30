@@ -36,11 +36,15 @@ beforeEach(async () => {
   await User.deleteMany();
   let password = "111111";
   initialData[0].hashedPassword = await createHashedPassword(password);
+  initialData[1].hashedPassword = await createHashedPassword(password);
   let userObject = new User(initialData[0]);
   await userObject.save();
-  initialData[1].hashedPassword = await createHashedPassword(password);
   userObject = new User(initialData[1]);
   await userObject.save();
+
+  // const userData = initialData.map((userObject) => new User(userObject));
+  // const promiseUserArray = userData.map((obj) => obj.save());
+  // await Promise.all(promiseUserArray);
 
   const userCredentials = {
     username: "ajay",
