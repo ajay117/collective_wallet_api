@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/User.model");
+const Group = require("../models/Group.model");
 
 const createHashedPassword = (password) => {
   const saltRounds = 10;
@@ -11,4 +12,9 @@ const usersInDB = async () => {
   return users.map((user) => user.toJSON());
 };
 
-module.exports = { createHashedPassword, usersInDB };
+const groupsInDB = async () => {
+  const groups = await Group.find({});
+  return groups.map((group) => group.toJSON());
+};
+
+module.exports = { createHashedPassword, usersInDB, groupsInDB };
