@@ -4,9 +4,15 @@ const User = require("../models/User.model");
 const Group = require("../models/Group.model");
 const authenticateToken = require("../middleware/authenticateToken.middleware");
 
+router.get("/", async (req, res) => {
+  const groups = await Group.find({});
+  console.log(groups);
+  res.status(200).json(groups);
+});
 
-
-router.get("/:id", async (req, res) => {
+router.get("/:id", authenticateToken, async (req, res) => {
+  const groups = await Group.find({});
+  console.log(groups);
   const { id } = req.params;
   if (!id) {
     res.status(400).json({ message: "Please send a valid id" });
@@ -22,7 +28,9 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", authenticateToken, async (req, res) => {
   const { group_name } = req.body;
-  if (await Group.findOne({ group_name })) {
+  const groupById = await Group.findOne({ groupName: group_name });
+
+  if (groupById) {
     res.status(400).json({ message: "The group already exists" });
     return;
   }
@@ -30,8 +38,6 @@ router.post("/", authenticateToken, async (req, res) => {
   const { user } = req;
   const userId = user.user.id;
   const userInDb = await User.findOne({ _id: userId });
-
-  console.log({ userInDb });
 
   const group = new Group({
     groupName: group_name,
@@ -81,16 +87,21 @@ router.put("/:id", authenticateToken, async (req, res) => {
 
 router.delete("/:id", authenticateToken, async (req, res) => {
   const { id } = req.params;
-  const { user } = req;
+  const { user } = req.user;
   if (!id) {
     res.status(400).json({ message: "Please provide a valid id" });
   }
 
   const group = await Group.findOne({ _id: id });
   if (group.admin[0]["id"] !== user.id) {
+    console.log("helloo--------------");
+    console.log(group.admin[0]["id"], user.id);
     res.status(401).json({ message: "You are not authorized" });
     return;
   }
+
+  console.log('helloooooooo1111111111--------------')
+  await Group.findOneAndDelete({ _id: id });
   res.status(200).end();
 });
 
