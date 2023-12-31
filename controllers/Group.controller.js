@@ -4,15 +4,14 @@ const User = require("../models/User.model");
 const Group = require("../models/Group.model");
 const authenticateToken = require("../middleware/authenticateToken.middleware");
 
-router.get("/", async (req, res) => {
+router.get("/", authenticateToken, async (req, res) => {
   const groups = await Group.find({});
-  console.log(groups);
+
   res.status(200).json(groups);
 });
 
 router.get("/:id", authenticateToken, async (req, res) => {
-  const groups = await Group.find({});
-  console.log(groups);
+  // const groups = await Group.find({});
   const { id } = req.params;
   if (!id) {
     res.status(400).json({ message: "Please send a valid id" });
@@ -46,6 +45,7 @@ router.post("/", authenticateToken, async (req, res) => {
     expenses: [],
   });
 
+  group.admin = [];
   group.admin.push({
     id: userInDb._id.toString(),
     username: userInDb.username,
@@ -94,13 +94,10 @@ router.delete("/:id", authenticateToken, async (req, res) => {
 
   const group = await Group.findOne({ _id: id });
   if (group.admin[0]["id"] !== user.id) {
-    console.log("helloo--------------");
-    console.log(group.admin[0]["id"], user.id);
     res.status(401).json({ message: "You are not authorized" });
     return;
   }
 
-  console.log('helloooooooo1111111111--------------')
   await Group.findOneAndDelete({ _id: id });
   res.status(200).end();
 });

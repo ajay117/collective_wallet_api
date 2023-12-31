@@ -171,8 +171,8 @@ describe("/groups/:id route, delete request", () => {
       .expect(401)
       .expect("Content-Type", /application\/json/);
 
-    const allGroupsInDbAAfterRequest = await groupsInDB();
-    expect(allGroupsInDbAAfterRequest).toHaveLength(allGroupsInDb.length);
+    const allGroupsInDbAfterRequest = await groupsInDB();
+    expect(allGroupsInDbAfterRequest).toHaveLength(allGroupsInDb.length);
   });
 
   test("return 200 and delete group, if request is made by group admin", async () => {
@@ -181,8 +181,57 @@ describe("/groups/:id route, delete request", () => {
 
     await api.delete(`/groups/${firstGroupId}`).set("Authorization", `Bearer ${token}`).expect(200);
 
-    const allGroupsInDbAAfterRequest = await groupsInDB();
-    expect(allGroupsInDbAAfterRequest).toHaveLength(allGroupsInDb.length - 1);
+    const allGroupsInDbAfterRequest = await groupsInDB();
+    expect(allGroupsInDbAfterRequest).toHaveLength(allGroupsInDb.length - 1);
+  });
+});
+
+describe("/groups/:id put request", () => {
+  test("request made without login or valid token should return 401", async () => {
+    const allGroupsInDb = await groupsInDB();
+    const newGroupName = {
+      group_name: "Nepali Khata",
+    };
+    const firstGroup = allGroupsInDb[0];
+    await api
+      .put(`/groups/${firstGroup.id}`)
+      .send(newGroupName)
+      .expect(401)
+      .expect("Content-Type", /application\/json/);
+  });
+
+  test("request made with login user and a valid token but not admin should return 401", async () => {
+    const allGroupsInDb = await groupsInDB();
+    const newGroupName = {
+      group_name: "Nepali Khata",
+    };
+    const secondGroup = allGroupsInDb[1];
+    await api
+      .put(`/groups/${secondGroup.id}`)
+      .send(newGroupName)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(401)
+      .expect("Content-Type", /application\/json/);
+  });
+
+  test("request made by the admin should return 200", async () => {
+    const allGroupsInDb = await groupsInDB();
+    const firstGroup = allGroupsInDb[0];
+    const newGroupName = {
+      group_name: "Nepali Khata",
+    };
+
+    await api
+      .put(`/groups/${firstGroup.id}`)
+      .send(newGroupName)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200)
+      .expect("Content-Type", /application\/json/);
+
+    const allGroupsInDbAfterRequest = await groupsInDB();
+    const arr = allGroupsInDbAfterRequest.map((group) => group.groupName);
+    expect(arr).toContain("Nepali Khata");
+    expect(arr).not.toContain(firstGroup.groupName);
   });
 });
 
