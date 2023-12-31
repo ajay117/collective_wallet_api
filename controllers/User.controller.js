@@ -32,7 +32,7 @@ router.delete("/:id", authenticateToken, async (req, res) => {
   }
   let userInDb = await User.findOne({ _id: id });
   userInDb = userInDb.toJSON();
-  console.log(userInDb.id, user.user.id);
+
   if (userInDb) {
     if (userInDb.id !== user.user.id) {
       res.status(401).json({ message: "You are not authorized to make this request" });
@@ -62,7 +62,6 @@ router.post("/signup", async (req, res) => {
 
   bcrypt.hash(password, saltRounds, async (err, hash) => {
     if (err) {
-      console.log(err);
       res.status(500).json("Error hashing password");
     }
 
@@ -71,7 +70,6 @@ router.post("/signup", async (req, res) => {
       hashedPassword: hash,
     });
     await user.save();
-    console.log(user);
     res.status(200).json({ message: "Successfully created" });
   });
 });
@@ -82,7 +80,6 @@ router.post("/login", async (req, res, next) => {
 
   if (user) {
     const hashedPassword = user.hashedPassword;
-    console.log({ password, hashedPassword });
     bcrypt.compare(password, hashedPassword, (err, result) => {
       if (err) {
         next(err);
