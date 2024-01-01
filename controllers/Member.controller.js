@@ -23,6 +23,14 @@ router.post("/:id/members/:userId/add_member", authenticateToken, async (req, re
     res.status(401).json({ message: "You are not admin of this group" });
     return;
   }
+
+  //Check if the group already have the user as a member by id
+  let isMember = group.members.includes(userId);
+  if (isMember) {
+    res.status(400).json({ message: "Cannot add a user twice" });
+    return;
+  }
+
   group.members.push(user._id);
   await group.save();
 
@@ -51,6 +59,12 @@ router.delete("/:id/members/:userId/delete_member", authenticateToken, async (re
 
   if (!isAdmin) {
     res.status(401).json({ message: "You are not authorized" });
+    return;
+  }
+
+  let isMember = group.members.includes(userId);
+  if (!isMember) {
+    res.status(400).json({ message: `Sorry, the user is not in the group` });
     return;
   }
 

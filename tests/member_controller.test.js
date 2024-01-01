@@ -95,7 +95,7 @@ beforeEach(async () => {
 });
 
 describe("request starting with /groups/:id/members/ ", () => {
-  test("request made by not admin will return 401", async () => {
+  test("post request to add members made by not admin will return 401", async () => {
     const allUsersInDb = await usersInDB();
     const allGroupsInDb = await groupsInDB();
     const firstUserInDb = allUsersInDb[0];
@@ -110,7 +110,7 @@ describe("request starting with /groups/:id/members/ ", () => {
       .expect("Content-Type", /application\/json/);
   });
 
-  test("post request to /groups/:id/members/:userId/add_member, by admin will add a member to the group", async () => {
+  test("post request to add members /groups/:id/members/:userId/add_member, by admin will add a member to the group", async () => {
     const allUsersInDb = await usersInDB();
     const allGroupsInDb = await groupsInDB();
     let secondUserInDb = allUsersInDb[1];
@@ -130,7 +130,26 @@ describe("request starting with /groups/:id/members/ ", () => {
     expect(memberInGroup).toContain(body.id);
   });
 
-  test("request to remove a member  from the group by admin should return 200", async () => {
+  test("post request to add a member in a group, where the member already exist should return 400", async () => {
+    const allUsersInDb = await usersInDB();
+    const allGroupsInDb = await groupsInDB();
+    let secondUserInDb = allUsersInDb[1];
+    const firstGroupInDb = allGroupsInDb[0];
+
+    await api
+      .post(`/groups/${firstGroupInDb.id}/members/${secondUserInDb.id}/add_member`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200)
+      .expect("Content-Type", /application\/json/);
+
+    await api
+      .post(`/groups/${firstGroupInDb.id}/members/${secondUserInDb.id}/add_member`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(400)
+      .expect("Content-Type", /application\/json/);
+  });
+
+  test("delete request to remove a member  from the group by admin should return 200", async () => {
     let allUsersInDb = await usersInDB();
     let allGroupsInDb = await groupsInDB();
     let firstGroupInDb = allGroupsInDb[0];
@@ -158,6 +177,33 @@ describe("request starting with /groups/:id/members/ ", () => {
 
     const memberInGroupArr = secondUserInDb.memberInGroup.map((obj) => obj.id);
     expect(memberInGroupArr).not.toContain(secondUserInDb.id);
+  });
+
+  test("delete request to remove a member if not in group as a member should return 400", async () => {
+    let allUsersInDb = await usersInDB();
+    let allGroupsInDb = await groupsInDB();
+    let firstGroupInDb = allGroupsInDb[0];
+    let secondUserInDb = allUsersInDb[1];
+
+    await api
+      .delete(`/groups/${firstGroupInDb.id}/members/${secondUserInDb.id}/delete_member`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(400);
+  });
+
+  test("delete request to remove member by not admin should return 401", async () => {
+    let allUsersInDb = await usersInDB();
+    let allGroupsInDb = await groupsInDB();
+    let firstGroupInDb = allGroupsInDb[0];
+    let secondUserInDb = allUsersInDb[1];
+
+    await api
+      .post(`/groups/${firstGroupInDb.id}/members/${secondUserInDb.id}/add_member`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200)
+      .expect("Content-Type", /application\/json/);
+
+    await api.delete(`/groups/${firstGroupInDb.id}/members/${secondUserInDb.id}/delete_member`).expect(401);
   });
 });
 
