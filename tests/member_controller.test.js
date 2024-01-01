@@ -131,10 +131,10 @@ describe("request starting with /groups/:id/members/ ", () => {
   });
 
   test("request to remove a member  from the group by admin should return 200", async () => {
-    const allUsersInDb = await usersInDB();
-    const allGroupsInDb = await groupsInDB();
-    const firstGroupInDb = allGroupsInDb[0];
-    const secondUserInDb = allUsersInDb[1];
+    let allUsersInDb = await usersInDB();
+    let allGroupsInDb = await groupsInDB();
+    let firstGroupInDb = allGroupsInDb[0];
+    let secondUserInDb = allUsersInDb[1];
 
     //Adding second member from db to first group in db by admin as a member
     await api
@@ -149,10 +149,15 @@ describe("request starting with /groups/:id/members/ ", () => {
       .set("Authorization", `Bearer ${token}`)
       .expect(200);
 
-    // await api
-    //   .del("/groups/:groupId/members/:memberId/delete_member")
-    //   .set("Authorization", `Bearer ${token}`)
-    //   .expect(200);
+    allUsersInDb = await usersInDB();
+    allGroupsInDb = await groupsInDB();
+    firstGroupInDb = allGroupsInDb[0];
+    secondUserInDb = allUsersInDb[1];
+
+    expect(firstGroupInDb.members).not.toContain(secondUserInDb.id);
+
+    const memberInGroupArr = secondUserInDb.memberInGroup.map((obj) => obj.id);
+    expect(memberInGroupArr).not.toContain(secondUserInDb.id);
   });
 });
 
