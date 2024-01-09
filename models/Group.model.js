@@ -15,7 +15,7 @@ const groupSchema = new mongoose.Schema({
   expenses: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "ExpenseCategory",
+      ref: "Expense",
     },
   ], //We will store references of expenses
 });

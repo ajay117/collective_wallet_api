@@ -9,6 +9,7 @@ const config = require("./config");
 const usersRoute = require("./controllers/User.controller");
 const groupsRoute = require("./controllers/Group.controller");
 const membersRoute = require("./controllers/Member.controller");
+const expenseRoute = require("./controllers/Expense.controller");
 const errorHandler = require("./middleware/errorHandler.middleware");
 
 const mongoDbUrl = config.MONGODB_URI;
@@ -30,6 +31,7 @@ app.get("/", (req, res) => {
 app.use("/users", usersRoute);
 app.use("/groups", groupsRoute);
 app.use("/groups", membersRoute);
+app.use("/groups", expenseRoute);
 
 app.use((req, res) => {
   res.status(404).json("Sorry, we cant't find the page you are requesting");
